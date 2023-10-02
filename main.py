@@ -1,49 +1,58 @@
-import matplotlib.pyplot as plt
-import random
 import numpy as np
-
-
-class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-
-def random_points(n=100):
-    points = []
-    for i in range(n):
-        points.append(Point(random.randint(0, 100), random.randint(0, 100)))
-        # plt.scatter(points[i].x, points[i].y, color='b')
-        plt.scatter(points[i].x, points[i].y)
-    return points
+import pygame
+import random
 
 
 def dist(pointA, pointB):
-    return np.sqrt((pointA.x - pointB.x) ** 2 + (pointA.y - pointB.y) ** 2)
+    return np.sqrt((pointA[0] - pointB[0]) ** 2 + (pointA[1] - pointB[1]) ** 2)
 
 
-def make_first_centroids(points, n=5):
-    pointCntr = Point(0, 0)  # center of the circle
-    for i in range(len(points)):
-        pointCntr.x += points[i].x
-        pointCntr.y += points[i].y
-    pointCntr.x /= len(points)
-    pointCntr.y /= len(points)
-    R = 0  # radius of the circle
-    for i in range(len(points)):
-        d = dist(points[i], pointCntr)
-        if (d > R):
-            R = d
-    centroids = []
-    for i in range(n):
-        centroids.append(Point(R * np.cos(2 * np.pi * i / n) + pointCntr.x,
-                               R * np.sin(2 * np.pi * i / n) + pointCntr.y))
-        # plt.scatter(centroids[i].x, centroids[i].y, color = 'r')
-        plt.scatter(centroids[i].x, centroids[i].y)
-    return centroids
+def near_points(point):
+    count = random.randint(2,5)
+    points = []
+    for i in range(count):
+        x = random.randint(-20, 20)
+        y = random.randint(-20, 20)
+        points.append([point[0] + x, point[1] + y])
+    return points
 
 
 if __name__ == '__main__':
-    points = random_points(200)
-    make_first_centroids(points)
-    plt.show()
+    pygame.init()
+    screen = pygame.display.set_mode((600, 400))
+    screen.fill(color="#FFFFFF")
+    pygame.display.flip()
+    is_active = True
+    is_pressed = False
+    points = []
+    while (is_active):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                is_active = False
+            if event.type == pygame.KEYUP:
+                if event.key == 13:
+                    screen.fill(color="#FFFFFF")
+                    points = []
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                is_pressed = True
+                if event.button == 1:
+                    is_pressed = True
+                    coord = event.pos
+                    points.append(coord)
+                    pygame.draw.circle(screen, color='black', center=coord, radius=5)
+            if event.type == pygame.MOUSEBUTTONUP:
+                is_pressed = False
+            if event.type == pygame.MOUSEMOTION:
+                if is_pressed:
+                    # if random.choice((0,10))==0:
+                    # coord = event.pos
+                    # pygame.draw.circle(screen, color='black', center=coord, radius=10)
+                    if (dist(event.pos, points[-1]) > 20):
+                        coord = event.pos
+                        pygame.draw.circle(screen, color='black', center=coord, radius=5)
+                        for nearP in near_points(coord):
+                            pygame.draw.circle(screen, color='black', center=nearP, radius=5)
+                            points.append(near_points(coord))
+                        points.append(coord)
+
+        pygame.display.update()
