@@ -21,7 +21,7 @@ def near_points(point):
     return points
 
 
-def dbscan(points, distance, count_of_points):
+def dbscan(points, distance, count_of_points, height):
     alone = 0
     pointer = 0
 
@@ -41,6 +41,7 @@ def dbscan(points, distance, count_of_points):
             q = neighbours.pop()
             if q not in visited_points:
                 visited_points.add(q)
+                plt.scatter(q[0], height - q[1], c='g')
                 neighbours2 = find_neighbours(q)
                 if len(neighbours2) > count_of_points:
                     neighbours.extend(neighbours2)
@@ -60,7 +61,9 @@ def dbscan(points, distance, count_of_points):
         else:
             pointer += 1
             add_cluster(p, neighbours)
+            plt.scatter(p[0], height - p[1], c='g')
 
+    plt.show()
     return clusters
 
 
@@ -105,7 +108,7 @@ if __name__ == '__main__':
 
         pygame.display.update()
 
-    clusters = dbscan(points, 50, 4)
+    clusters = dbscan(points, 50, 4, HEIGHT)
     for c, points in zip(cycle('bgrcmyk'), clusters.values()):
         X = [p[0] for p in points]
         Y = [HEIGHT - p[1] for p in points]
