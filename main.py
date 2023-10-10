@@ -80,10 +80,6 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 is_active = False
-            if event.type == pygame.KEYUP:
-                if event.key == 13:
-                    screen.fill(color="#FFFFFF")
-                    points = []
             if event.type == pygame.MOUSEBUTTONDOWN:
                 is_pressed = True
                 if event.button == 1:
@@ -105,12 +101,18 @@ if __name__ == '__main__':
                             pygame.draw.circle(screen, color='black', center=nearP, radius=5)
                             points.append(nearP)
                         points.append(coord)
-
+            if event.type == pygame.KEYUP:
+                if event.key == 13:
+                    screen.fill(color="#FFFFFF")
+                    clusters = dbscan(points, 50, 4, HEIGHT)
+                    for points in clusters.values():
+                        for point in points:
+                            pygame.draw.circle(screen, color='green', center=point, radius=5)
         pygame.display.update()
 
-    clusters = dbscan(points, 50, 4, HEIGHT)
-    for c, points in zip(cycle('bgrcmyk'), clusters.values()):
-        X = [p[0] for p in points]
-        Y = [HEIGHT - p[1] for p in points]
-        plt.scatter(X, Y, c=c)
-    plt.show()
+    #clusters = dbscan(points, 50, 4, HEIGHT)
+    #for c, points in zip(cycle('bgrcmyk'), clusters.values()):
+    #   X = [p[0] for p in points]
+    #    Y = [HEIGHT - p[1] for p in points]
+    #    plt.scatter(X, Y, c=c)
+    #plt.show()
