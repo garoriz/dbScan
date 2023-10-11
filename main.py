@@ -21,7 +21,7 @@ def near_points(point):
     return points
 
 
-def dbscan(points, distance, count_of_points, height):
+def dbscan(points, distance, count_of_points, screen):
     alone = 0
     pointer = 0
 
@@ -41,7 +41,8 @@ def dbscan(points, distance, count_of_points, height):
             q = neighbours.pop()
             if q not in visited_points:
                 visited_points.add(q)
-                plt.scatter(q[0], height - q[1], c='g')
+                # plt.scatter(q[0], height - q[1], c='g')
+                pygame.draw.circle(screen, color='green', center=q, radius=5)
                 neighbours2 = find_neighbours(q)
                 if len(neighbours2) > count_of_points:
                     neighbours.extend(neighbours2)
@@ -61,7 +62,8 @@ def dbscan(points, distance, count_of_points, height):
         else:
             pointer += 1
             add_cluster(p, neighbours)
-            plt.scatter(p[0], height - p[1], c='g')
+            # plt.scatter(p[0], height - p[1], c='g')
+            pygame.draw.circle(screen, color='green', center=p, radius=5)
 
     plt.show()
     return clusters
@@ -104,15 +106,15 @@ if __name__ == '__main__':
             if event.type == pygame.KEYUP:
                 if event.key == 13:
                     screen.fill(color="#FFFFFF")
-                    clusters = dbscan(points, 50, 4, HEIGHT)
-                    for points in clusters.values():
-                        for point in points:
-                            pygame.draw.circle(screen, color='green', center=point, radius=5)
+                    clusters = dbscan(points, 50, 4, screen)
+                    # for points in clusters.values():
+                    # for point in points:
+                    # pygame.draw.circle(screen, color='green', center=point, radius=5)
         pygame.display.update()
 
-    #clusters = dbscan(points, 50, 4, HEIGHT)
-    #for c, points in zip(cycle('bgrcmyk'), clusters.values()):
+    # clusters = dbscan(points, 50, 4, HEIGHT)
+    # for c, points in zip(cycle('bgrcmyk'), clusters.values()):
     #   X = [p[0] for p in points]
     #    Y = [HEIGHT - p[1] for p in points]
     #    plt.scatter(X, Y, c=c)
-    #plt.show()
+    # plt.show()
