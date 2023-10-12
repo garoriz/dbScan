@@ -21,6 +21,26 @@ def near_points(point):
     return points
 
 
+def draw_yellow_points(p, n, alone_points):
+    if n not in alone_points:
+        pygame.draw.circle(screen, color='yellow', center=p, radius=5)
+        return
+    pygame.draw.circle(screen, color='red', center=p, radius=5)
+
+
+
+def iterate_for_neighbours(p, neighbours, alone_points):
+    for n in neighbours:
+        draw_yellow_points(p, n, alone_points)
+
+
+def draw_red_points(p, neighbours, alone_points):
+    if len(neighbours) == 0:
+        pygame.draw.circle(screen, color='red', center=p, radius=5)
+    else:
+        iterate_for_neighbours(p, neighbours, alone_points)
+
+
 def dbscan(points, distance, count_of_points, screen):
     alone = 0
     pointer = 0
@@ -65,7 +85,10 @@ def dbscan(points, distance, count_of_points, screen):
             # plt.scatter(p[0], height - p[1], c='g')
             pygame.draw.circle(screen, color='green', center=p, radius=5)
 
-    plt.show()
+    for p in clusters[alone]:
+        neighbours = find_neighbours(p)
+        draw_red_points(p, neighbours, clusters[alone])
+
     return clusters
 
 
