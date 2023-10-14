@@ -1,7 +1,6 @@
 import random
 from itertools import cycle
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pygame
 from numpy import random
@@ -13,83 +12,86 @@ def dist(pointA, pointB):
 
 def near_points(point):
     count = random.randint(2, 5)
-    points = []
+    points_array = []
     for i in range(count):
         x = random.randint(-20, 20)
         y = random.randint(-20, 20)
-        points.append((point[0] + x, point[1] + y))
-    return points
+        points_array.append((point[0] + x, point[1] + y))
+    return points_array
 
 
-def draw_yellow_points(p, n, alone_points):
+def is_yellow_point(n, alone_points):
     if n not in alone_points:
-        pygame.draw.circle(screen, color='yellow', center=p, radius=5)
-        return
-    pygame.draw.circle(screen, color='red', center=p, radius=5)
-
+        return True
+    return False
 
 
 def iterate_for_neighbours(p, neighbours, alone_points):
+    is_yellow = False
     for n in neighbours:
-        draw_yellow_points(p, n, alone_points)
+        is_yellow = is_yellow_point(n, alone_points)
+    if is_yellow:
+        pygame.draw.circle(screen, color='yellow', center=p, radius=5)
+    else:
+        pygame.draw.circle(screen, color='red', center=p, radius=5)
 
 
 def draw_red_points(p, neighbours, alone_points):
-    if len(neighbours) == 0:
+    if len(neighbours) == 1:
         pygame.draw.circle(screen, color='red', center=p, radius=5)
     else:
         iterate_for_neighbours(p, neighbours, alone_points)
 
 
-def dbscan(points, distance, count_of_points, screen):
+def dbscan(points_array, distance, count_of_points, scr):
     alone = 0
     pointer = 0
 
     visited_points = set()
     clustered_points = set()
-    clusters = {alone: []}
+    cluster_map = {alone: []}
 
     def find_neighbours(p):
-        return [q for q in points if dist(p, q) < distance]
+        return [q for q in points_array if dist(p, q) < distance]
 
-    def add_cluster(p, neighbours):
-        if pointer not in clusters:
-            clusters[pointer] = []
-        clusters[pointer].append(p)
-        clustered_points.add(p)
-        while neighbours:
-            q = neighbours.pop()
+    def add_cluster(point, n):
+        if pointer not in cluster_map:
+            cluster_map[pointer] = []
+        cluster_map[pointer].append(point)
+        clustered_points.add(point)
+        while n:
+            q = n.pop()
             if q not in visited_points:
                 visited_points.add(q)
                 # plt.scatter(q[0], height - q[1], c='g')
-                pygame.draw.circle(screen, color='green', center=q, radius=5)
+                pygame.draw.circle(scr, color='green', center=q, radius=5)
                 neighbours2 = find_neighbours(q)
                 if len(neighbours2) > count_of_points:
-                    neighbours.extend(neighbours2)
+                    n.extend(neighbours2)
             if q not in clustered_points:
                 clustered_points.add(q)
-                clusters[pointer].append(q)
-                if q in clusters[alone]:
-                    clusters[alone].remove(q)
+                cluster_map[pointer].append(q)
+                if q in cluster_map[alone]:
+                    cluster_map[alone].remove(q)
 
-    for p in points:
+    for p in points_array:
         if p in visited_points:
             continue
         visited_points.add(p)
         neighbours = find_neighbours(p)
         if len(neighbours) < count_of_points:
-            clusters[alone].append(p)
+            cluster_map[alone].append(p)
         else:
             pointer += 1
             add_cluster(p, neighbours)
             # plt.scatter(p[0], height - p[1], c='g')
-            pygame.draw.circle(screen, color='green', center=p, radius=5)
+            pygame.draw.circle(scr, color='green', center=p, radius=5)
 
-    for p in clusters[alone]:
+    for p in cluster_map[alone]:
         neighbours = find_neighbours(p)
-        draw_red_points(p, neighbours, clusters[alone])
+        draw_red_points(p, neighbours, cluster_map[alone])
 
-    return clusters
+    return cluster_map
 
 
 if __name__ == '__main__':
@@ -119,7 +121,7 @@ if __name__ == '__main__':
                     # if random.choice((0,10))==0:
                     # coord = event.pos
                     # pygame.draw.circle(screen, color='black', center=coord, radius=10)
-                    if (dist(event.pos, points[-1]) > 20):
+                    if dist(event.pos, points[-1]) > 20:
                         coord = event.pos
                         pygame.draw.circle(screen, color='black', center=coord, radius=5)
                         for nearP in near_points(coord):
@@ -130,6 +132,10 @@ if __name__ == '__main__':
                 if event.key == 13:
                     screen.fill(color="#FFFFFF")
                     clusters = dbscan(points, 50, 4, screen)
+                    for colour, points in zip(cycle('bgrcmyk'), clusters.values()):
+                        X = [p[0] for p in points]
+                        Y = [p[1] for p in points]
+                        # plt.scatter(X, Y, c=c)
                     # for points in clusters.values():
                     # for point in points:
                     # pygame.draw.circle(screen, color='green', center=point, radius=5)
