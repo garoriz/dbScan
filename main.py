@@ -63,7 +63,6 @@ def dbscan(points_array, distance, count_of_points, scr):
             q = n.pop()
             if q not in visited_points:
                 visited_points.add(q)
-                # plt.scatter(q[0], height - q[1], c='g')
                 pygame.draw.circle(scr, color='green', center=q, radius=5)
                 neighbours2 = find_neighbours(q)
                 if len(neighbours2) > count_of_points:
@@ -103,6 +102,8 @@ if __name__ == '__main__':
     is_active = True
     is_pressed = False
     points = []
+    count_of_keyup = 0
+    clusters = {}
     while (is_active):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -130,20 +131,13 @@ if __name__ == '__main__':
                         points.append(coord)
             if event.type == pygame.KEYUP:
                 if event.key == 13:
-                    screen.fill(color="#FFFFFF")
-                    clusters = dbscan(points, 50, 4, screen)
-                    for colour, points in zip(cycle('bgrcmyk'), clusters.values()):
-                        X = [p[0] for p in points]
-                        Y = [p[1] for p in points]
-                        # plt.scatter(X, Y, c=c)
-                    # for points in clusters.values():
-                    # for point in points:
-                    # pygame.draw.circle(screen, color='green', center=point, radius=5)
-        pygame.display.update()
+                    count_of_keyup = count_of_keyup + 1
+                    if count_of_keyup == 1:
+                        clusters = dbscan(points, 50, 4, screen)
+                    else:
+                        for colour, points in zip(cycle(["blue", "green", "red", "yellow", "grey", "black"]), clusters.values()):
+                            points_in_one_group = [p for p in points]
+                            for p in points_in_one_group:
+                                pygame.draw.circle(screen, color=colour, center=p, radius=5)
 
-    # clusters = dbscan(points, 50, 4, HEIGHT)
-    # for c, points in zip(cycle('bgrcmyk'), clusters.values()):
-    #   X = [p[0] for p in points]
-    #    Y = [HEIGHT - p[1] for p in points]
-    #    plt.scatter(X, Y, c=c)
-    # plt.show()
+        pygame.display.update()
